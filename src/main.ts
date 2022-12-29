@@ -6,8 +6,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
     const config = new DocumentBuilder()
-    .setTitle('WeHost')
-    .setDescription('WeHost Routes Documentation')
+    .setTitle('gitactiontest')
+    .setDescription('gitactiontest Routes Documentation')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
     .addSecurityRequirements('bearer')
