@@ -60,32 +60,6 @@ jobs:
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
-          BASIC_URL: ${{ secrets.DEV_BASIC_URL }}
-          FRONTEND_URL: ${{ secrets.DEV_FRONTEND_URL }}
-          ADMIN_PANEL_URL: ${{ secrets.DEV_ADMIN_PANEL_URL }}
-          EXPIRES_IN: ${{ secrets.DEV_EXPIRES_IN }}
-          JWT_SECRET: ${{ secrets.DEV_JWT_SECRET }}
-          DANGEROUSLY_DISABLE_AUTH_GUARD: ${{ secrets.DEV_DANGEROUSLY_DISABLE_AUTH_GUARD }}
-          SALT_VALUE: ${{ secrets.DEV_SALT_VALUE }}
-          POSTGRES_PORT: ${{ secrets.DEV_POSTGRES_PORT }}
-          DB_TYPE: ${{ secrets.DEV_DB_TYPE }}
-          POSTGRES_DATABASE: ${{ secrets.DEV_POSTGRES_DATABASE }}
-          POSTGRES_USER: ${{ secrets.DEV_POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DEV_POSTGRES_PASSWORD }}
-          POSTGRES_HOST: ${{ secrets.DEV_POSTGRES_HOST }}
-          TYPEORM_SYNC: ${{ secrets.DEV_TYPEORM_SYNC }}
-          SENDER_MAIL: ${{ secrets.DEV_SENDER_MAIL }}
-          SENDER_PASSWORD: ${{ secrets.DEV_SENDER_PASSWORD }}
-          MAIL_HOST: ${{ secrets.DEV_MAIL_HOST }}
-          MAIL_PORT: ${{ secrets.DEV_MAIL_PORT }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
-          AWS_PUBLIC_BUCKET_NAME: ${{ secrets.DEV_AWS_PUBLIC_BUCKET_NAME }}
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
           username: ${{ secrets.AWS_EC2_USERNAME }}
