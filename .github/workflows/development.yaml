@@ -1,0 +1,125 @@
+name: CI/CD Development
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  buildAndPublishToECR:
+    name: Build and Publish to AWS ECR
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f devops/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    
+  deployToEC2:
+    name: Deploy to AWS EC2
+    needs: buildAndPublishToECR
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+          BASIC_URL: ${{ secrets.DEV_BASIC_URL }}
+          FRONTEND_URL: ${{ secrets.DEV_FRONTEND_URL }}
+          ADMIN_PANEL_URL: ${{ secrets.DEV_ADMIN_PANEL_URL }}
+          EXPIRES_IN: ${{ secrets.DEV_EXPIRES_IN }}
+          JWT_SECRET: ${{ secrets.DEV_JWT_SECRET }}
+          DANGEROUSLY_DISABLE_AUTH_GUARD: ${{ secrets.DEV_DANGEROUSLY_DISABLE_AUTH_GUARD }}
+          SALT_VALUE: ${{ secrets.DEV_SALT_VALUE }}
+          POSTGRES_PORT: ${{ secrets.DEV_POSTGRES_PORT }}
+          DB_TYPE: ${{ secrets.DEV_DB_TYPE }}
+          POSTGRES_DATABASE: ${{ secrets.DEV_POSTGRES_DATABASE }}
+          POSTGRES_USER: ${{ secrets.DEV_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DEV_POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.DEV_POSTGRES_HOST }}
+          TYPEORM_SYNC: ${{ secrets.DEV_TYPEORM_SYNC }}
+          SENDER_MAIL: ${{ secrets.DEV_SENDER_MAIL }}
+          SENDER_PASSWORD: ${{ secrets.DEV_SENDER_PASSWORD }}
+          MAIL_HOST: ${{ secrets.DEV_MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.DEV_MAIL_PORT }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+          AWS_PUBLIC_BUCKET_NAME: ${{ secrets.DEV_AWS_PUBLIC_BUCKET_NAME }}
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_KEY }}
+          envs: AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,BASIC_URL,FRONTEND_URL,ADMIN_PANEL_URL,EXPIRES_IN,JWT_SECRET,DANGEROUSLY_DISABLE_AUTH_GUARD,SALT_VALUE,POSTGRES_PORT,DB_TYPE,POSTGRES_DATABASE,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_HOST,TYPEORM_SYNC,SENDER_MAIL,SENDER_PASSWORD,MAIL_HOST,MAIL_PORT,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_PUBLIC_BUCKET_NAME
+          script: |
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker network create backend_dev || true
+            docker stop backend_dev || true
+            docker rm backend_dev || true
+            docker run -d \
+              --name backend_dev \
+              --network backend_dev \
+              --restart unless-stopped \
+              -e PORT=3000 \
+              -e BASIC_URL=$BASIC_URL \
+              -e FRONTEND_URL=$FRONTEND_URL \
+              -e ADMIN_PANEL_URL=$ADMIN_PANEL_URL \
+              -e EXPIRES_IN=$EXPIRES_IN \
+              -e JWT_SECRET=$JWT_SECRET \
+              -e DANGEROUSLY_DISABLE_AUTH_GUARD=$DANGEROUSLY_DISABLE_AUTH_GUARD \
+              -e SALT_VALUE=$SALT_VALUE \
+              -e POSTGRES_PORT=$POSTGRES_PORT \
+              -e DB_TYPE=$DB_TYPE \
+              -e POSTGRES_DATABASE=$POSTGRES_DATABASE \
+              -e POSTGRES_USER=$POSTGRES_USER \
+              -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+              -e POSTGRES_HOST=$POSTGRES_HOST \
+              -e TYPEORM_SYNC=$TYPEORM_SYNC \
+              -e SENDER_MAIL=$SENDER_MAIL \
+              -e SENDER_PASSWORD=$SENDER_PASSWORD \
+              -e MAIL_HOST=$MAIL_HOST \
+              -e MAIL_PORT=$MAIL_PORT \
+              -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+              -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+              -e AWS_PUBLIC_BUCKET_NAME=$AWS_PUBLIC_BUCKET_NAME \
+              -p 3000:3000 \
+            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

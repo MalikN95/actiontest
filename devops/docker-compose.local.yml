@@ -1,0 +1,78 @@
+version: '3.5'
+
+services:
+  action_test:
+    image: action_test:local
+    container_name: action_test
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: devops/Dockerfile
+    depends_on:
+      - action_test_database
+    links:
+      - action_test_database
+    networks:
+      - action_test
+    ports:
+      - 127.0.0.1:3000:3000
+    environment:
+      PORT: 3000
+      BASIC_URL: 'http://localhost'
+      FRONTEND_URL: 'http://localhost:4200'
+      ADMIN_PANEL_URL: 'http://localhost:4201'
+      EXPIRES_IN: '10d'
+      JWT_SECRET: 'action_testSecter'
+      DANGEROUSLY_DISABLE_AUTH_GUARD: 'false'
+      SALT_VALUE: 10
+      POSTGRES_PORT: 5432
+      DB_TYPE: 'postgres'
+      POSTGRES_DATABASE: 'postgres'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: '3i162jcuVIiJLnmFLmr5'
+      POSTGRES_HOST: 'action_test_database'
+      TYPEORM_SYNC: 'true'
+      SENDER_MAIL: 'example@gmail.com'
+      SENDER_PASSWORD: 'exojwoarozdyvasy'
+      MAIL_HOST: 'mail.action_test.com'
+      MAIL_PORT: 465
+      AWS_ACCESS_KEY_ID: ''
+      AWS_SECRET_ACCESS_KEY: ''
+      AWS_PUBLIC_BUCKET_NAME: ''
+
+  action_test_database:
+    image: postgres:latest
+    container_name: action_test_database
+    restart: unless-stopped
+    volumes:
+      - database:/var/lib/postgresql
+      - database-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: 'postgres'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: '3i162jcuVIiJLnmFLmr5'
+    networks:
+      - action_test
+    ports:
+      - 127.0.0.1:5432:5432
+      
+volumes:
+  database:
+    driver: local
+    external: false
+    driver_opts:
+      o: bind
+      type: none
+      device: ${HOME}/docker-storage/action_test/database
+  database-data:
+    driver: local
+    external: false
+    driver_opts:
+      o: bind
+      type: none
+      device: ${HOME}/docker-storage/action_test/database-data
+
+networks:
+  action_test:
+    name: action_test
+    external: false
