@@ -1,19 +1,19 @@
 version: '3.5'
 
 services:
-  action_test:
-    image: action_test:local
-    container_name: action_test
+  wehost_backend:
+    image: wehost_backend:local
+    container_name: wehost_backend
     restart: unless-stopped
     build:
       context: ..
       dockerfile: devops/Dockerfile
     depends_on:
-      - action_test_database
+      - wehost_database
     links:
-      - action_test_database
+      - wehost_database
     networks:
-      - action_test
+      - wehost
     ports:
       - 127.0.0.1:3000:3000
     environment:
@@ -22,7 +22,7 @@ services:
       FRONTEND_URL: 'http://localhost:4200'
       ADMIN_PANEL_URL: 'http://localhost:4201'
       EXPIRES_IN: '10d'
-      JWT_SECRET: 'action_testSecter'
+      JWT_SECRET: 'WeHostSecter'
       DANGEROUSLY_DISABLE_AUTH_GUARD: 'false'
       SALT_VALUE: 10
       POSTGRES_PORT: 5432
@@ -30,19 +30,19 @@ services:
       POSTGRES_DATABASE: 'postgres'
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: '3i162jcuVIiJLnmFLmr5'
-      POSTGRES_HOST: 'action_test_database'
+      POSTGRES_HOST: 'wehost_database'
       TYPEORM_SYNC: 'true'
       SENDER_MAIL: 'example@gmail.com'
       SENDER_PASSWORD: 'exojwoarozdyvasy'
-      MAIL_HOST: 'mail.action_test.com'
+      MAIL_HOST: 'mail.wehost.com'
       MAIL_PORT: 465
       AWS_ACCESS_KEY_ID: ''
       AWS_SECRET_ACCESS_KEY: ''
       AWS_PUBLIC_BUCKET_NAME: ''
 
-  action_test_database:
+  wehost_database:
     image: postgres:latest
-    container_name: action_test_database
+    container_name: wehost_database
     restart: unless-stopped
     volumes:
       - database:/var/lib/postgresql
@@ -52,7 +52,7 @@ services:
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: '3i162jcuVIiJLnmFLmr5'
     networks:
-      - action_test
+      - wehost
     ports:
       - 127.0.0.1:5432:5432
       
@@ -63,16 +63,16 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ${HOME}/docker-storage/action_test/database
+      device: ${HOME}/docker-storage/wehost/database
   database-data:
     driver: local
     external: false
     driver_opts:
       o: bind
       type: none
-      device: ${HOME}/docker-storage/action_test/database-data
+      device: ${HOME}/docker-storage/wehost/database-data
 
 networks:
-  action_test:
-    name: action_test
+  wehost:
+    name: wehost
     external: false

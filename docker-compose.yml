@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  api:
+    container_name: 'wehost_be_${NODE_ENV}'
+    image: 'wehost_be_${NODE_ENV}'
+    environment:
+      - NODE_ENV:${NODE_ENV}
+    command: yarn
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: '${NODE_ENV}'
+    env_file:
+      - .env
+    entrypoint:
+      - yarn
+      - run
+      - 'start:${NODE_ENV}'
+
+    ports:
+      - ${PORT}:${PORT}
+    networks:
+      - nesjs-network
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+networks:
+  nesjs-network:

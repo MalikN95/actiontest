@@ -1,7 +1,8 @@
 # compiled output
+/build
 /dist
 /node_modules
-
+/uploads
 # Logs
 logs
 *.log
@@ -26,10 +27,27 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+.dccache
 
 # IDE - VSCode
+.vscode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# envs
+.env
+.env.prod
+
+# postgres
+pgdata
+
+#core dump when node crashes
+core
+
+# This is a yarn project, yarn is safer (hash verification protects agains mitm),
+# and, also, package-lock.json breaks the build on PR action (potentially the 
+# server build as well)
+package-lock.json

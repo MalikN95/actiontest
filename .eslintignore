@@ -1,0 +1,10 @@
+.lintstagedrc
+node_modules
+src/migrations
+pgdata
+infra
+!.vscode
+test
+
+#core dump when node crashes
+core
