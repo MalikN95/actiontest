@@ -1,4 +1,4 @@
 up:
-	docker-compose -f devops/docker-compose.local.yml --project-name wehost up --build -d
+	docker-compose -f devops/docker-compose.local.yml --project-name action up --build -d
 down:
-	docker-compose -f devops/docker-compose.local.yml --project-name wehost down
+	docker-compose -f devops/docker-compose.local.yml --project-name action down

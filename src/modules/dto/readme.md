@@ -1,1 +1,0 @@
-This folder is for DTOs that are used in more than one entity (universal DTOs)
