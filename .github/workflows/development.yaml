@@ -86,7 +86,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_PUBLIC_BUCKET_NAME: ${{ secrets.DEV_AWS_PUBLIC_BUCKET_NAME }}
-          echo "ENV OK"
+          run: |
+            echo "ENV OK"
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
           username: ${{ secrets.AWS_EC2_USERNAME }}
