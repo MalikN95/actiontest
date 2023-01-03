@@ -105,5 +105,10 @@ jobs:
               --network backend_dev \
               --restart unless-stopped \
               -e PORT=3000 \
+              -e POSTGRES_DATABASE='postgres' \
+              -e POSTGRES_USER='postgres' \
+              -e POSTGRES_PASSWORD='Wehost-2023' \
+              -e POSTGRES_HOST='wehost-stage-database-1.c1dxhqw6hdck.eu-central-1.rds.amazonaws.com' \
+              -e TYPEORM_SYNC='true' \
               -p 3000:3000 \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

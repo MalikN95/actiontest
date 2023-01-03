@@ -1,19 +1,19 @@
 version: '3.5'
 
 services:
-  wehost_backend:
-    image: wehost_backend:local
-    container_name: wehost_backend
+  action-test:
+    image: action-test:local
+    container_name: action-test
     restart: unless-stopped
     build:
       context: ..
       dockerfile: devops/Dockerfile
     depends_on:
-      - wehost_database
+      - action_database
     links:
-      - wehost_database
+      - action_database
     networks:
-      - wehost
+      - action
     ports:
       - 127.0.0.1:3000:3000
     environment:
@@ -22,7 +22,7 @@ services:
       FRONTEND_URL: 'http://localhost:4200'
       ADMIN_PANEL_URL: 'http://localhost:4201'
       EXPIRES_IN: '10d'
-      JWT_SECRET: 'WeHostSecter'
+      JWT_SECRET: 'actionSecter'
       DANGEROUSLY_DISABLE_AUTH_GUARD: 'false'
       SALT_VALUE: 10
       POSTGRES_PORT: 5432
@@ -30,19 +30,19 @@ services:
       POSTGRES_DATABASE: 'postgres'
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: '3i162jcuVIiJLnmFLmr5'
-      POSTGRES_HOST: 'wehost_database'
+      POSTGRES_HOST: 'action_database'
       TYPEORM_SYNC: 'true'
       SENDER_MAIL: 'example@gmail.com'
       SENDER_PASSWORD: 'exojwoarozdyvasy'
-      MAIL_HOST: 'mail.wehost.com'
+      MAIL_HOST: 'mail.action.com'
       MAIL_PORT: 465
       AWS_ACCESS_KEY_ID: ''
       AWS_SECRET_ACCESS_KEY: ''
       AWS_PUBLIC_BUCKET_NAME: ''
 
-  wehost_database:
+  action_database:
     image: postgres:latest
-    container_name: wehost_database
+    container_name: action_database
     restart: unless-stopped
     volumes:
       - database:/var/lib/postgresql
@@ -52,7 +52,7 @@ services:
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: '3i162jcuVIiJLnmFLmr5'
     networks:
-      - wehost
+      - action
     ports:
       - 127.0.0.1:5432:5432
       
@@ -63,16 +63,16 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ${HOME}/docker-storage/wehost/database
+      device: ${HOME}/docker-storage/action/database
   database-data:
     driver: local
     external: false
     driver_opts:
       o: bind
       type: none
-      device: ${HOME}/docker-storage/wehost/database-data
+      device: ${HOME}/docker-storage/action/database-data
 
 networks:
-  wehost:
-    name: wehost
+  action:
+    name: action
     external: false
